@@ -1,18 +1,17 @@
 from iserv_cli.cli import IdentityServerCli
-import argparse
 from dotenv import load_dotenv
+import argparse
 import os
 load_dotenv()
 
 command_key = 'com'
-config_path = os.environ['ISERV_CONFIG_PATH']
 
 
 class ParserBuiler:
     def __init__(self):
         self.parser = argparse.ArgumentParser()
         self.main = self.parser.add_subparsers(dest='base')
-        self.cli = IdentityServerCli(config_path=config_path)
+        self.cli = IdentityServerCli()
 
     def add_key(self, root, key):
         _root = root.copy()
@@ -22,7 +21,7 @@ class ParserBuiler:
     def to_dict(self, args):
         return args.__dict__
 
-    def bind_argument(self, parser, argument, description, keys, required=True, **kwargs):
+    def bind_argument(self, parser, argument: list, description: str, keys: list, required=True, **kwargs):
         key = '_'.join(keys) + f'__{argument[1]}'
         parser.add_argument(f'-{argument[0]}', f'--{argument[1]}',
                             type=str, required=required, help=description, dest=key, metavar='', **kwargs)
