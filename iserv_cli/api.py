@@ -1,17 +1,21 @@
+from iserv_cli.auth import CliAuth
+from iserv_cli.config import CliConfig
 import requests
 import json
 
 
 class IdentityServerApi:
-    def __init__(self, base_url, api_key):
-        self.base_url = base_url
-        self.api_key = api_key
+    def __init__(self):
+        self.config = CliConfig()
+        self.base_url = self.config.values.get('base_url')
+        self.auth = CliAuth()
 
     def get_headers(self, form_encoded=False):
         content_type = 'x-www-form-urlencoded' if form_encoded else 'json'
+        token = self.auth.get_token()
         headers = {
-            'API-Key': self.api_key,
-            'Content-Type': f'application/{content_type}'
+            'Content-Type': f'application/{content_type}',
+            'Authorization': f'Bearer {token}'
         }
 
         return headers
@@ -76,40 +80,40 @@ class IdentityServerApi:
             json=body)
         return self.parse_response(scopes)
 
-    def get_client(self, name):
+    def get_client(self, name: str) -> dict:
         client = requests.get(
             url=f'{self.base_url}/api/Client/{name}',
             headers=self.get_headers())
         return self.parse_response(client)
 
-    def get_role(self, name):
+    def get_role(self, name: str) -> dict:
         role = requests.get(
             url=f'{self.base_url}/api/Role/{name}',
             headers=self.get_headers())
         return self.parse_response(role)
 
-    def get_scope(self, name):
+    def get_scope(self, name: str) -> dict:
         scope = requests.get(
             url=f'{self.base_url}/api/Scope/{name}',
             headers=self.get_headers())
         return self.parse_response(scope)
 
-    def delete_client(self, name):
+    def delete_client(self, name: str) -> None:
         requests.delete(
             url=f'{self.base_url}/api/Client/{name}',
             headers=self.get_headers())
 
-    def delete_role(self, name):
+    def delete_role(self, name: str) -> None:
         requests.delete(
             url=f'{self.base_url}/api/Role/{name}',
             headers=self.get_headers())
 
-    def delete_scope(self, name):
+    def delete_scope(self, name: str) -> None:
         requests.delete(
             url=f'{self.base_url}/api/Scope/{name}',
             headers=self.get_headers())
 
-    def get_token(self, client, secret, scopes):
+    def get_token(self, client: str, secret: str, scopes: list) -> dict:
         data = {
             'client_id': client,
             'client_secret': secret,
@@ -125,7 +129,7 @@ class IdentityServerApi:
 
         return response.json()
 
-    def parse_response(self, response):
+    def parse_response(self, response) -> dict:
         try:
             content = json.loads(response.content)
             return content

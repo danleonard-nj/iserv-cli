@@ -1,83 +1,65 @@
 from iserv_cli.api import IdentityServerApi
+from iserv_cli.config import CliConfig
 from iserv_cli.console import ConsoleDisplayCli
 from iserv_cli.mapper import RequestMapper
 from dotenv import load_dotenv
-import json
-import os
 load_dotenv()
-
-api_key = os.environ['ISERV_API_KEY']
 
 
 class IdentityServerCli:
-    def __init__(self, config_path):
-        self.config_path = config_path
-        config = self.load_config()
-        self.api = IdentityServerApi(
-            base_url=config.get('base_url'),
-            api_key=api_key)
+    def __init__(self):
+        self.config = CliConfig()
+        self.api = IdentityServerApi()
         self.mapper = RequestMapper()
         self.console = ConsoleDisplayCli()
-        self.config = config
 
-    def load_config(self):
-        with open(f'{self.config_path}/iserv.json', 'r') as file:
-            config = json.loads(file.read())
-        return config
-
-    def save_config(self, config):
-        self.config = config
-        with open(f'{self.config_path}/iserv.json', 'w') as file:
-            file.write(json.dumps(config))
-
-    def config_set_base_uri(self, uri):
-        config = self.load_config()
-        config['base_url'] = uri
-        self.save_config(config=config)
+    def config_set_base_uri(self, uri: str) -> None:
+        self.config.values['base_uri'] = uri
+        self.config.save_config()
         print('uri updated successfully')
 
-    def config_get_base_uri(self):
-        config = self.load_config()
+    def config_get_base_uri(self) -> None:
+        base_uri = self.config.values.get('base_uri')
         self.console.write(
-            content=config.get('base_url'),
+            content=base_uri,
             output_type='text')
 
-    def list_role(self, output):
+    def list_role(self, output: str) -> None:
         roles = self.api.get_roles()
         if len(roles) > 0:
             self.console.write(content=roles, output_type=output)
         else:
             self.console.write('No roles found', output_type='text')
 
-    def list_client(self, output):
+    def list_client(self, output) -> None:
         clients = self.api.get_clients()
         if len(clients) > 0:
             self.console.write(content=clients, output_type=output)
         else:
             self.console.write('No clients found', output_type='text')
 
-    def list_scope(self, output):
+    def list_scope(self, output) -> None:
         scopes = self.api.get_scopes()
         if len(scopes) > 0:
             self.console.write(content=scopes, output_type=output)
         else:
             self.console.write('No scopes found', output_type='text')
 
-    def get_client(self, name, output):
+    def get_client(self, name, output) -> None:
         client = self.api.get_client(name)
         if client is not None:
             self.console.write(content=[client], output_type=output)
         else:
             self.console.write(f'No client with the name {name} was found')
 
-    def get_scope(self, name, output):
+    def get_scope(self, name, output) -> None:
         scope = self.api.get_scope(name)
         if scope is not None:
             self.console.write(content=[scope], output_type=output)
         else:
             self.console.write(f'No scope with the name {name} was found')
 
-    def get_role(self, name, output):
+    def get_role(self, name, output) -> None:
         role = self.api.get_role(name)
         if role is not None:
             self.console.write(content=[role], output_type=output)
