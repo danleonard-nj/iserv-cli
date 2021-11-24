@@ -117,7 +117,7 @@ class IdentityServerApi:
         data = {
             'client_id': client,
             'client_secret': secret,
-            'scope': ' '.join(scopes),
+            'scope': ' '.join(scopes) if isinstance(scopes, list) else scopes,
             'grant_type': 'client_credentials'
         }
 
